@@ -47,9 +47,11 @@ func (bh *BoardHandler) validateBoardData(name, description string) error {
 }
 
 func (bh *BoardHandler) Index(w http.ResponseWriter, r *http.Request) {
+	searchParam := r.URL.Query().Get("search")
+
 	ctxUser := r.Context().Value(middleware.CtxUserKey).(middleware.CtxUser)
 
-	boards, err := bh.boardRepository.GetAllBoardsByUserId(ctxUser.ID)
+	boards, err := bh.boardRepository.GetAllBoardsByUserId(ctxUser.ID, searchParam)
 	if err != nil {
 		slog.Error("failed to get boards", "err", err)
 		helper.ErrorJsonResponse(w, http.StatusInternalServerError, "internal server error")

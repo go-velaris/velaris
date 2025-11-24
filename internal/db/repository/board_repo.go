@@ -13,7 +13,7 @@ var (
 )
 
 type BoardRepository interface {
-	GetAllBoardsByUserId(userId int64) ([]*models.Board, error)
+	GetAllBoardsByUserId(userId int64, search string) ([]*models.Board, error)
 	CreateBoard(args *CreateBoardArgs) (*models.Board, error)
 	GetBoardById(args *GetBoardByIdArgs) (*models.Board, error)
 	UpdateBoardById(args *UpdateBoardByIdArgs) (*models.Board, error)
@@ -28,12 +28,13 @@ func NewBoardRepository(engine *xorm.Engine) *boardRepository {
 	return &boardRepository{engine}
 }
 
-func (br *boardRepository) GetAllBoardsByUserId(userId int64) ([]*models.Board, error) {
+func (br *boardRepository) GetAllBoardsByUserId(userId int64, search string) ([]*models.Board, error) {
 	boards := []*models.Board{}
 
 	err := br.engine.
 		Alias("b").
-		Where("b.userId = ?", userId).
+		Where("b.user_id = ?", userId).
+		Where("b.name ILIKE ?", "%"+search+"%").
 		Find(&boards)
 	if err != nil {
 		return nil, err
