@@ -13,8 +13,8 @@ func NewListPolicy(engine *xorm.Engine) Policy {
 	return &listPolicy{engine}
 }
 
-func (lp *listPolicy) userOwnsList(ctxUser middleware.CtxUser, id int64) (bool, error) {
-	exists, err := lp.engine.
+func userOwnsList(engine *xorm.Engine, ctxUser middleware.CtxUser, id int64) (bool, error) {
+	exists, err := engine.
 		Alias("l").
 		Where("l.id = ?", id).
 		Join("INNER", "boards b", "b.id = l.board_id").
@@ -23,25 +23,22 @@ func (lp *listPolicy) userOwnsList(ctxUser middleware.CtxUser, id int64) (bool, 
 	if err != nil {
 		return false, err
 	}
-	if !exists {
-		return false, nil
-	}
 
-	return true, nil
+	return exists, nil
 }
 
-func (lp *listPolicy) CanView(ctxUser middleware.CtxUser, id int64) (bool, error) {
-	return lp.userOwnsList(ctxUser, id)
+func (lp *listPolicy) CanView(ctxUser middleware.CtxUser, listId int64) (bool, error) {
+	return userOwnsList(lp.engine, ctxUser, listId)
 }
 
-func (lp *listPolicy) CanCreate(ctxUser middleware.CtxUser, id int64) (bool, error) {
-	return true, nil
+func (lp *listPolicy) CanCreate(ctxUser middleware.CtxUser, boardId int64) (bool, error) {
+	return userOwnsBoard(lp.engine, ctxUser, boardId)
 }
 
-func (lp *listPolicy) CanUpdate(ctxUser middleware.CtxUser, id int64) (bool, error) {
-	return lp.userOwnsList(ctxUser, id)
+func (lp *listPolicy) CanUpdate(ctxUser middleware.CtxUser, listId int64) (bool, error) {
+	return userOwnsList(lp.engine, ctxUser, listId)
 }
 
-func (lp *listPolicy) CanDelete(ctxUser middleware.CtxUser, id int64) (bool, error) {
-	return lp.userOwnsList(ctxUser, id)
+func (lp *listPolicy) CanDelete(ctxUser middleware.CtxUser, listId int64) (bool, error) {
+	return userOwnsList(lp.engine, ctxUser, listId)
 }

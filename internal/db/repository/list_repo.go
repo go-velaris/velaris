@@ -13,6 +13,7 @@ var (
 
 type ListRepository interface {
 	GetAllListsByBoardId(args *GetAllListsByBoardIdArgs) ([]*models.List, error)
+	CreateList(args *CreateListArgs) (*models.List, error)
 	DeleteListById(args *DeleteListByIdArgs) error
 }
 
@@ -40,6 +41,31 @@ func (lr *listRepository) GetAllListsByBoardId(args *GetAllListsByBoardIdArgs) (
 	}
 
 	return lists, nil
+}
+
+type CreateListArgs struct {
+	Name    string
+	BoardId int64
+}
+
+func (lr *listRepository) CreateList(args *CreateListArgs) (*models.List, error) {
+	listCount, err := lr.engine.Where("board_id = ?", args.BoardId).Count(&models.List{})
+	if err != nil {
+		return nil, err
+	}
+
+	list := &models.List{
+		Name:     args.Name,
+		BoardId:  args.BoardId,
+		Position: int(listCount) + 1,
+	}
+
+	_, err = lr.engine.Insert(list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }
 
 type DeleteListByIdArgs struct {
