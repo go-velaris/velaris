@@ -4,7 +4,7 @@ import "time"
 
 type Board struct {
 	Id          int64     `json:"id"`
-	Name        string    `xorm:"NOT NULL" json:"name"`
+	Name        string    `xorm:"INDEX NOT NULL" json:"name"`
 	Description *string   `xorm:"TEXT" json:"description"`
 	UserId      int64     `xorm:"INDEX NOT NULL" json:"user_id"`
 	User        *User     `xorm:"-" json:"user"`
